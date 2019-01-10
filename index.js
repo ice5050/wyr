@@ -114,9 +114,13 @@ io.on('connection', function(socket) {
 		MongoClient.connect('mongodb://localhost:27017/wyr', function (err, client) {
 			if (err) throw err
 			var db = client.db('wyr')
-			db.collection('questions').aggregate([ {$sample: {size: 1}}, {$match: {_id: {$nin: [firstQuestionId, secondQuestionId]}}}]).toArray(function (err, result) {
+			db.collection('questions').aggregate([ {$match: {_id: {$nin: [firstQuestionId, secondQuestionId]}}}, {$sample: {size: 1}}]).toArray(function (err, result) {
 				if (err) throw err
-				console.log(result)
+
+				io.sockets.adapter.rooms[data.roomNumber]['current_question'] = secondQuestion
+				io.sockets.adapter.rooms[data.roomNumber]['next_question'] = result[0]
+
+				io.of('/').in(data.roomNumber).emit('next_question', {nextQuestion: result[0]})
 			})
 		})
 

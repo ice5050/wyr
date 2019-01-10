@@ -73,11 +73,6 @@ $(document).ready(function() {
 		e.target.classList.remove('btn-light')
 		var selectedAnswer = e.target.getAttribute('data-option')
 
-		// if you are the last person selecting, tell the server and retrieve new questions
-		if (game.youAreTheLastPerson()) {
-			socket.emit('last_player_selected', {roomNumber: roomNumber})
-		}
-
 		game.playerSelected(selfId, selectedAnswer)
 		socket.emit('select_answer', {roomNumber: roomNumber, selectedAnswer: selectedAnswer})
 		updateProgressBar(game.answerProgress())
@@ -209,10 +204,6 @@ $(document).ready(function() {
 				answers[this.players[player].selected_answer] = answers[this.players[player].selected_answer] + 1 || 1
 			}
 			return answers
-		}
-
-		this.youAreTheLastPerson = function() {
-			return this.allAnswers()[null] == 1
 		}
 
 		// check the answers getting punished
