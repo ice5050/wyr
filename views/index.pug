@@ -1,0 +1,35 @@
+extends base.pug
+
+block scripts
+	script(src="/javascript/index.js")
+
+block body
+	div(class="d-flex flex-column justify-content-around vh-100")
+		div(class="container")
+			div(class="mb-4")
+				h1(class="display-1 text-center").
+					WYR
+				h4(class="lead text-center").
+					Would You Rather
+			div(class="d-flex justify-content-center", role="tablist")
+					a(href="#nav-new-room", id="new-room", class="btn btn-primary") Create Room
+					span(class="btn cursor-default") or
+					a(href="#nav-join-room", id="join-room", class="btn btn-info") Join Room
+			.row
+				.col-md-3
+				.col-md-6
+					form(method="post", action="/", id="game-form", style="display: none;", class="mb-0")
+						hr
+						.form-group#player_namee
+							label(for="player_name") Player Name
+							input(type="text", name="player_name", class="form-control", id="player_name")
+							span(class="text-danger small d-none", id="name-error") *You need a player name to play
+						.form-group#room-number
+							label(for="room_number") Room Code
+							input(type="text", name="room_number", class="form-control", id="room_number")
+							span(class="text-danger small d-none", id="room-number-error") *You need a room code to join a room
+						.form-group
+							.text-center
+								input(type="submit", value="Go!", class="btn btn-success")
+				.col-md-3
+			

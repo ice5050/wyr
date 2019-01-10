@@ -1,0 +1,15 @@
+.cursor-default {
+	cursor: default !important;
+}
+
+.transition-quick {
+	transition: all 0.3s;
+}
+
+.hide {
+	transform: translateY(100px);
+}
+
+.show {
+	transform: translateY(0px) !important;
+}

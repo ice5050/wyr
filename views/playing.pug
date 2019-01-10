@@ -1,0 +1,26 @@
+extends base.pug
+
+block scripts
+	script(src="/javascript/playing.js")
+block body
+	.fixed-top#alerts
+	.container.my-4
+		p.text-center ##{room_number}
+		h1.text-center#question Would You Rather
+		.row#options(style={'display': 'none'})
+			.col-6.d-flex
+				button.my-4.rounded.p-sm-2.p-md-4.border.btn.btn-block.btn-light#first-option(data-option="1", style={'min-height': '300px'}) Option 1
+			.col-6.d-flex
+				button.my-4.rounded.p-sm-2.p-md-4.border.btn.btn-block.btn-light#second-option(data-option="2", style={'min-height': '300px'}) Option 2
+		#result.text-white.pd-4.rounded.text-center.position-absolute(style={'display': 'none', 'top': '0px', 'left': '0px', 'right': '0px', 'bottom': '0px'})
+			#personal-result.d-flex.flex-column.h-100.justify-content-around
+				h1.display-1(style={'font-size': '30em'})
+				button.btn.btn-success.btn-block.fixed-bottom#next-question
+					i.fas.fa-angle-double-right.text-white.fa-3x
+	
+
+block footer
+	.fixed-bottom
+		.progress#progress-container
+			div.progress-bar.progress-bar-striped.progress-bar-animated.bg-danger#progress(role="progressbar", aria-valuenow="1", aria-valuemin="0", aria-valuemax="100", style="width: 1%")
+	p.d-none#player_name #{player_name}
