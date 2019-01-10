@@ -102,12 +102,13 @@ io.on('connection', function(socket) {
 
 	socket.on('last_player_selected', function(data) {
 		// set the current question to the next one and retrieve new question to be the next
-
 		var firstQuestion = io.sockets.adapter.rooms[data.roomNumber]['current_question']
 		var secondQuestion = io.sockets.adapter.rooms[data.roomNumber]['next_question']
 
 		firstQuestionId = new ObjectID(firstQuestion['_id'])
 		secondQuestionId = new ObjectID(secondQuestion['_id'])
+
+		console.log(firstQuestionId, secondQuestionId)
 
 		// set the next question to a new one
 		MongoClient.connect('mongodb://localhost:27017/wyr', function (err, client) {
@@ -117,11 +118,6 @@ io.on('connection', function(socket) {
 				if (err) throw err
 				console.log(result)
 			})
-			// 	io.sockets.adapter.rooms[data.roomNumber]['next_question'] = result[0]
-				
-			// 	socket.emit('next_question', {nextQuestion: io.sockets.adapter.rooms[data.roomNumber]['next_question'] })
-			// })
-
 		})
 
 	})
