@@ -19,7 +19,9 @@ app.use(
 app.use(
   session({
     genid: req => uuidv4(),
-    secret: 'i hit my head so hard it hurts'
+    secret: 'i hit my head so hard it hurts',
+    resave: false,
+    saveUninitialized: false
   })
 )
 
