@@ -2,19 +2,19 @@ $(document).ready(() => {
   let game
   let selfId
   let playerName = $('#player_name').text()
-  let socket = io()
+  const socket = io()
 
   socket.on('connect', () => {
     selfId = socket.id
   })
 
-  var roomNumber = window.location.href.split('play/')[1]
+  let roomNumber = window.location.href.split('play/')[1]
 
-  socket.emit('join', { roomNumber: roomNumber, playerName: playerName })
-  socket.emit('get_current_room_status', { roomNumber: roomNumber })
+  socket.emit('join', { roomNumber, playerName })
+  socket.emit('get_current_room_status', { roomNumber })
 
   window.onbeforeunload = e => {
-    socket.emit('leave', { roomNumber: roomNumber, playerName: playerName })
+    socket.emit('leave', { roomNumber, playerName })
   }
 
   socket.on('receive_question', questions => {
@@ -33,7 +33,6 @@ $(document).ready(() => {
     addAlert('success', `${newPlayer.player_name} has joined the game.`)
     game.toggleOptions()
     updateProgressBar(game.answerProgress())
-    game.showOptionsAndHideResult(0)
   })
 
   socket.on('player_leave', player => {
@@ -56,7 +55,7 @@ $(document).ready(() => {
 
     // get the options if they are not set yet
     if (!game.question) {
-      socket.emit('get_question', { roomNumber: roomNumber })
+      socket.emit('get_question', { roomNumber })
     } else {
       $('#first-option').text(game.question['option1'])
       $('#second-option').text(game.question['option2'])
@@ -98,7 +97,7 @@ $(document).ready(() => {
   // flash message adding function
   function addAlert (alertClass, message, dismissable = true) {
     let div = document.createElement('div')
-    let divClassList = [
+    const divClassList = [
       'alert',
       `alert-${alertClass}`,
       'alert-dismissible',
@@ -178,7 +177,8 @@ $(document).ready(() => {
     }
 
     this.answerProgress = () => {
-      return this.playerAnswered() / this.playerAmount()
+      let progress = this.playerAnswered() / this.playerAmount()
+      return progress
     }
 
     // check if the last player has selected (the game is still going)
@@ -225,9 +225,8 @@ $(document).ready(() => {
         this.players[player].selected_answer = null
       }
 
-      $('#options button')
-        .removeClass('btn-primary')
-        .addClass('btn-light')
+      $('#options button').removeClass('btn-primary')
+      $('#options button').addClass('btn-light')
       this.toggleOptions()
       updateProgressBar(0)
     }
