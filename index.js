@@ -6,9 +6,11 @@ const bodyParser = require('body-parser')
 const session = require('express-session')
 const uuidv4 = require('uuid/v4')
 const shortid = require('shortid')
-const MongoClient = require('mongodb').MongoClient
+const getDb = require('./helpers/db')
 const ObjectID = require('mongodb').ObjectID
 const path = require('path')
+
+let wyrDb
 
 app.use(express.static(path.join(__dirname, '/public')))
 app.use(
@@ -64,24 +66,17 @@ io.on('connection', socket => {
 
   socket.on('get_question', data => {
     // get the question from the database and send out 2 to clients
-    MongoClient.connect(
-      'mongodb://localhost:27017/wyr',
-      (err, client) => {
+    wyrDb
+      .collection('questions')
+      .aggregate([{ $sample: { size: 2 } }])
+      .toArray((err, result) => {
         if (err) throw err
-        var db = client.db('wyr')
-        db.collection('questions')
-          .aggregate([{ $sample: { size: 2 } }])
-          .toArray((err, result) => {
-            if (err) throw err
-            socket.emit('receive_question', result)
+        socket.emit('receive_question', result)
 
-            io.sockets.adapter.rooms[data.roomNumber]['current_question'] =
-              result[0]
-            io.sockets.adapter.rooms[data.roomNumber]['next_question'] =
-              result[1]
-          })
-      }
-    )
+        io.sockets.adapter.rooms[data.roomNumber]['current_question'] =
+          result[0]
+        io.sockets.adapter.rooms[data.roomNumber]['next_question'] = result[1]
+      })
   })
 
   socket.on('select_answer', data => {
@@ -135,35 +130,29 @@ io.on('connection', socket => {
     const secondQuestionId = new ObjectID(secondQuestion['_id'])
 
     // set the next question to a new one
-    MongoClient.connect(
-      'mongodb://localhost:27017/wyr',
-      (err, client) => {
+    wyrDb
+      .collection('questions')
+      .aggregate([
+        { $match: { _id: { $nin: [firstQuestionId, secondQuestionId] } } },
+        { $sample: { size: 1 } }
+      ])
+      .toArray((err, result) => {
         if (err) throw err
-        var db = client.db('wyr')
-        db.collection('questions')
-          .aggregate([
-            { $match: { _id: { $nin: [firstQuestionId, secondQuestionId] } } },
-            { $sample: { size: 1 } }
-          ])
-          .toArray((err, result) => {
-            if (err) throw err
+        io.sockets.adapter.rooms[
+          data.roomNumber
+        ].current_question = secondQuestion
+        io.sockets.adapter.rooms[data.roomNumber].next_question = result[0]
 
-            io.sockets.adapter.rooms[
-              data.roomNumber
-            ].current_question = secondQuestion
-            io.sockets.adapter.rooms[data.roomNumber].next_question = result[0]
-
-            io.of('/')
-              .in(data.roomNumber)
-              .emit('next_question', {
-                nextQuestion: result[0]
-              })
+        io.of('/')
+          .in(data.roomNumber)
+          .emit('next_question', {
+            nextQuestion: result[0]
           })
-      }
-    )
+      })
   })
 })
 
-http.listen(3000, () => {
+http.listen(3000, async () => {
+  wyrDb = await getDb()
   console.log('The server is now open on port: 3000')
 })
