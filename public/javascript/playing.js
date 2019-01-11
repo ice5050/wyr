@@ -34,7 +34,6 @@ $(document).ready(function() {
 		addAlert('success', `${newPlayer.player_name} has joined the game.`)
 		game.toggleOptions()
 		updateProgressBar(game.answerProgress())
-		game.showOptionsAndHideResult(0)
 	})
 
 	socket.on('player_leave', function(player) {
@@ -226,6 +225,7 @@ $(document).ready(function() {
 			$('#options button').addClass('btn-light')
 			this.toggleOptions()
 			updateProgressBar(0)
+
 		}
 
 		this.addQuestion = function(question) {
