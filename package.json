@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js",
+    "format": "prettier-eslint --write \"{public/**/*.js,index.js}\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier-watch": "onchange \"{public/**/*.js,index.js}\" -- prettier-eslint --write {{changed}}"
   },
   "author": "",
   "license": "ISC",
@@ -17,5 +20,18 @@
     "shortid": "^2.2.14",
     "socket.io": "^2.2.0",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "nodemon": "^1.18.9",
+    "prettier": "^1.15.3",
+    "prettier-eslint": "^8.8.2",
+    "prettier-eslint-cli": "^4.7.1"
   }
 }
