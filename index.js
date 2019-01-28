@@ -137,7 +137,7 @@ io.on('connection', socket => {
   })
 })
 
-http.listen(3000, async () => {
+http.listen(8080, async () => {
   wyrDb = await getDb()
   console.log('The server is now open on port: 3000')
 })
