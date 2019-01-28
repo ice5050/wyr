@@ -159,10 +159,13 @@ async function getNewQuestion(roomNumber, db) {
       ])
       .toArray((err, result) => {
         if (err) throw err
-        io.sockets.adapter.rooms[roomNumber]['game'].addNextQuestion(result[0])
-        console.log("After changing")
-        console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
-        console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
+        try {
+          io.sockets.adapter.rooms[roomNumber]['game'].addNextQuestion(result[0])  
+          console.log("After changing")
+          console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
+          console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
+        }
+
       })
 
 }
