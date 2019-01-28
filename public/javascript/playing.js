@@ -48,6 +48,7 @@ $(document).ready(() => {
     if (hasEveryoneAnswered(game)) { 
       disableOptions()
       hideOptionsAndShowResult(2000)
+      resetProgressBar(2000)
     }
 
   })
