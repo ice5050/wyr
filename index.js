@@ -7,6 +7,7 @@ const session = require('express-session')
 const uuidv4 = require('uuid/v4')
 const shortid = require('shortid')
 const getDb = require('./helpers/db')
+const Game = require('./helpers/game')
 const ObjectID = require('mongodb').ObjectID
 const path = require('path')
 
@@ -54,101 +55,85 @@ app.get('/play/:room_number', (req, res) => {
 })
 
 io.on('connection', socket => {
-  // when a new player joins a room, set the player name and emit the new player's details to everyone in the room
+
+  // 1. when a new player joins a room, check if the room already has a game running
+  // 2. if there is no game running create a new game object, assign it to the room
+  // 3. join the new player to the room
+  // 4. send the new game status to joined player
+  // 5. if there is a game running, add the new player to the game
+  // 6. send the game status to joined player
+  // 7. send the new player and game room status to everyone else
+
   socket.on('join', data => {
     socket.join(data.roomNumber)
-    socket.broadcast.to(data.roomNumber).emit('player_join', {
-      player_id: socket.id,
-      player_name: data.playerName
-    })
     socket.playerName = data.playerName
-  })
 
-  socket.on('get_question', data => {
-    // get the question from the database and send out 2 to clients
-    wyrDb
+    if (io.sockets.adapter.rooms[data.roomNumber]['game'] == undefined) { // 1
+      
+      wyrDb
       .collection('questions')
       .aggregate([{ $sample: { size: 2 } }])
       .toArray((err, result) => {
+
         if (err) throw err
-        socket.emit('receive_question', result)
+        io.sockets.adapter.rooms[data.roomNumber]['game'] = new Game(result[0], result[1]) // 2
+        io.sockets.adapter.rooms[data.roomNumber]['game'].playerJoin({playerId: socket.id, playerName: data.playerName}) // 3
+        socket.emit('currentGameStatus', io.sockets.adapter.rooms[data.roomNumber]['game']) // 4
 
-        io.sockets.adapter.rooms[data.roomNumber]['current_question'] =
-          result[0]
-        io.sockets.adapter.rooms[data.roomNumber]['next_question'] = result[1]
       })
-  })
 
-  socket.on('select_answer', data => {
-    socket.selectedAnswer = data.selectedAnswer
-    socket.broadcast.to(data.roomNumber).emit('player_selected_an_answer', {
-      player_id: socket.id,
-      selected_answer: data.selectedAnswer
+    } else  {
+      io.sockets.adapter.rooms[data.roomNumber]['game'].playerJoin({playerId: socket.id, playerName: data.playerName}) // 5
+      socket.emit('currentGameStatus', io.sockets.adapter.rooms[data.roomNumber]['game']) // 6
+    }
+
+    socket.broadcast.to(data.roomNumber).emit('newPlayerJoin', { // 7
+      playerId: socket.id,
+      playerName: data.playerName,
+      game: io.sockets.adapter.rooms[data.roomNumber]['game']
     })
+
   })
 
-  socket.on('get_current_room_status', data => {
-    // send players' name in the same room when joined
-    io.of('/')
-      .in(data.roomNumber)
-      .clients((error, clients) => {
-        if (error) throw error
+  socket.on('selectAnswer', data => {
 
-        var sameRoomPlayerStatus = clients.reduce((result, client) => {
-          result[client] = {}
-          result[client].player_name = io.sockets.connected[client].playerName
-          result[client].selected_answer =
-            io.sockets.connected[client].selectedAnswer || null
-          return result
-        }, {})
+    // 1. update the game of the room with new answer
+    // 2. send the game status to players
+    // 3. check if all players have answered
+    // 4. if all players have answered, 4.1 reset all answers,  4.2 get new questions
+    // 5. emit new question to current players
+    io.sockets.adapter.rooms[data.roomNumber]['game'].playerSelectAnswer(socket.id, data.selectedAnswer) // 1
+    io.in(data.roomNumber).emit('playerSelectedAnswer', io.sockets.adapter.rooms[data.roomNumber]['game']) // 2
 
-        socket.emit('current_room_status', {
-          question:
-            io.sockets.adapter.rooms[data.roomNumber]['current_question'],
-          currentPlayers: sameRoomPlayerStatus,
-          nextQuestion:
-            io.sockets.adapter.rooms[data.roomNumber]['next_question']
-        })
-      })
+    if (io.sockets.adapter.rooms[data.roomNumber]['game'].hasEveryoneAnswered()) { // 3
+      io.sockets.adapter.rooms[data.roomNumber]['game'].resetAllAnswers() // 4.1
+      io.in(data.roomNumber).emit('nextQuestion', io.sockets.adapter.rooms[data.roomNumber]['game'].nextQuestion)
+      getNewQuestion(data.roomNumber, wyrDb)
+    }
+
   })
 
   socket.on('leave', data => {
-    socket.broadcast.to(data.roomNumber).emit('player_leave', {
-      player_id: socket.id,
-      player_name: data.playerName
-    })
-  })
 
-  socket.on('last_player_selected', data => {
-    // set the current question to the next one and retrieve new question to be the next
-    const firstQuestion =
-      io.sockets.adapter.rooms[data.roomNumber]['current_question']
-    const secondQuestion =
-      io.sockets.adapter.rooms[data.roomNumber]['next_question']
+    // 1. update the game by removing the player from room
+    // 2. send the game status to players
+    // 3. check if all current players have answered
+    // 4. if all players have answered, 4.1 reset all answers, 4.2 get new questions
+    // 5. emit new question to current players
 
-    const firstQuestionId = new ObjectID(firstQuestion['_id'])
-    const secondQuestionId = new ObjectID(secondQuestion['_id'])
+    try { // there is a case where a user leave a room after server reset, causing an error
+      io.sockets.adapter.rooms[data.roomNumber]['game'].playerLeave(socket.id) // 1
+      socket.broadcast.to(data.roomNumber).emit('playerLeave', {playerName: data.playerName, game: io.sockets.adapter.rooms[data.roomNumber]['game']})   // 2
 
-    // set the next question to a new one
-    wyrDb
-      .collection('questions')
-      .aggregate([
-        { $match: { _id: { $nin: [firstQuestionId, secondQuestionId] } } },
-        { $sample: { size: 1 } }
-      ])
-      .toArray((err, result) => {
-        if (err) throw err
-        io.sockets.adapter.rooms[
-          data.roomNumber
-        ].current_question = secondQuestion
-        io.sockets.adapter.rooms[data.roomNumber].next_question = result[0]
+      if (io.sockets.adapter.rooms[data.roomNumber]['game'].hasEveryoneAnswered()) { // 3
+        io.sockets.adapter.rooms[data.roomNumber]['game'].resetAllAnswers() // 4.1
+        io.in(data.roomNumber).emit('nextQuestion', io.sockets.adapter.rooms[data.roomNumber]['game'].nextQuestion)
+        getNewQuestion(data.roomNumber, wyrDb)
+      }
 
-        io.of('/')
-          .in(data.roomNumber)
-          .emit('next_question', {
-            nextQuestion: result[0]
-          })
-      })
+    } catch(error) {
+      console.log("A user left an empty room.")
+    }
   })
 })
 
@@ -156,3 +141,28 @@ http.listen(3000, async () => {
   wyrDb = await getDb()
   console.log('The server is now open on port: 3000')
 })
+
+async function getNewQuestion(roomNumber, db) {
+
+  let currentQuestionId = io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion._id
+  let nextQuestionId = io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion._id
+
+  console.log("Before changing")
+  console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
+  console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
+
+  db
+      .collection('questions')
+      .aggregate([
+        { $match: { _id: { $nin: [currentQuestionId, nextQuestionId] } } },
+        { $sample: { size: 1 } }
+      ])
+      .toArray((err, result) => {
+        if (err) throw err
+        io.sockets.adapter.rooms[roomNumber]['game'].addNextQuestion(result[0])
+        console.log("After changing")
+        console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
+        console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
+      })
+
+}
