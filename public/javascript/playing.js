@@ -52,8 +52,9 @@ $(document).ready(() => {
 
   })
 
-  socket.on('nextQuestion', question => {
-    nextQuestion = question
+  socket.on('nextQuestion', game => {
+    game = game
+    nextQuestion = game.nextQuestion
     console.log(nextQuestion)
   })
 
@@ -88,7 +89,8 @@ $(document).ready(() => {
     $('#first-option').text(nextQuestion['option1'])
     $('#second-option').text(nextQuestion['option2'])
     $('#options .btn-primary').removeClass('btn-primary')
-    showOptionsAndHideResult()
+    resetProgressBar()
+    showOptionsAndHideResult(game)
   })
 
   // flash message adding function
@@ -133,6 +135,16 @@ $(document).ready(() => {
     bar.attr('aria-valuenow', percent)
     bar.attr('style', `width: ${percent}%;`)
     bar.text(`${playerAnswered}/${playerCount}`)
+  }
+
+  function resetProgressBar() {
+    let bar = $('#progress')
+    let percent = 0
+
+    percent = 1
+    bar.attr('aria-valuenow', percent)
+    bar.attr('style', `width: ${percent}%;`)
+    bar.text(`00`)
   }
 
   function totalPlayers(game) {

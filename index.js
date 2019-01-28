@@ -107,7 +107,7 @@ io.on('connection', socket => {
 
     if (io.sockets.adapter.rooms[data.roomNumber]['game'].hasEveryoneAnswered()) { // 3
       io.sockets.adapter.rooms[data.roomNumber]['game'].resetAllAnswers() // 4.1
-      io.in(data.roomNumber).emit('nextQuestion', io.sockets.adapter.rooms[data.roomNumber]['game'].nextQuestion)
+      io.in(data.roomNumber).emit('nextQuestion', io.sockets.adapter.rooms[data.roomNumber]['game'])
       getNewQuestion(data.roomNumber, wyrDb)
     }
 
