@@ -111,14 +111,12 @@ app.get('/questions/approved', (req, res) => {
 
 app.get('/question/approve/:id', (req, res) => {
   wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "approved"}}, {upsert: false}).then((obj) => {
-    console.log(obj)
     res.redirect(req.query['from'])  
   })
 })
 
 app.get('/question/deny/:id', (req, res) => {
   wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "denied"}}, {upsert: false}).then((obj) => {
-    res.redirect('/questions')
     res.redirect(req.query['from'])
   })
 })
