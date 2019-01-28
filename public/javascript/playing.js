@@ -84,7 +84,11 @@ $(document).ready(() => {
 
   // when a user presses a next button
   $('#next-question').click(() => {
-    game.gameReset()
+    enableOptions()
+    $('#first-option').text(nextQuestion['option1'])
+    $('#second-option').text(nextQuestion['option2'])
+    $('#options .btn-primary').removeClass('btn-primary')
+    showOptionsAndHideResult()
   })
 
   // flash message adding function
@@ -173,23 +177,4 @@ $(document).ready(() => {
     $('#options button').attr('disabled', true)
   }
 
-  // the game object
-  function Game (currentRoomStatus) {
-
-    this.gameReset = () => {
-      for (let player in this.players) {
-        this.players[player].selected_answer = null
-      }
-
-      $('#options button').removeClass('btn-primary')
-      $('#options button').addClass('btn-light')
-      this.toggleOptions()
-      updateProgressBar(0)
-    }
-
-    this.insertNextQuestion = () => {
-      $('#first-option').text(this.nextQuestion['option1'])
-      $('#second-option').text(this.nextQuestion['option2'])
-    }
-  }
 })
