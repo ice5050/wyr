@@ -54,6 +54,70 @@ app.get('/play/:room_number', (req, res) => {
   })
 })
 
+app.get('/question/add', (req, res) => {
+  res.render('add_question', {
+    title: 'Add New Question'
+  })
+})
+
+app.post('/question/add', (req, res) => {
+  wyrDb.collection('questions').insertOne({
+    option1: req.body['option1'],
+    option2: req.body['option2'],
+    status: "pending"
+  })
+  res.redirect('/question/add')
+})
+
+app.get('/questions', (req, res) => {
+  questions: wyrDb.collection('questions').find({}).toArray((err, result) => {
+    res.render('question', {
+      title: "All Questions",
+      questions: result
+    })
+  })
+})
+
+app.get('/questions/pending', (req, res) => {
+  questions: wyrDb.collection('questions').find({status: 'pending'}).toArray((err, result) => {
+    res.render('question', {
+      title: "Pending Questions",
+      questions: result
+    })
+  })
+})
+
+app.get('/questions/denied', (req, res) => {
+  questions: wyrDb.collection('questions').find({status: 'denied'}).toArray((err, result) => {
+    res.render('question', {
+      title: "Denied Questions",
+      questions: result
+    })
+  })
+})
+
+app.get('/questions/approved', (req, res) => {
+  questions: wyrDb.collection('questions').find({status: 'approved'}).toArray((err, result) => {
+    res.render('question', {
+      title: "Approved Questions",
+      questions: result
+    })
+  })
+})
+
+app.get('/question/approve/:id', (req, res) => {
+  wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "approved"}}, {upsert: false}).then((obj) => {
+    console.log(obj)
+    res.redirect('/questions/pending')  
+  })
+})
+
+app.get('/question/deny/:id', (req, res) => {
+  wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "denied"}}, {upsert: false}).then((obj) => {
+    res.redirect('/questions/pending')  
+  })
+})
+
 io.on('connection', socket => {
 
   // 1. when a new player joins a room, check if the room already has a game running
@@ -72,7 +136,10 @@ io.on('connection', socket => {
       
       wyrDb
       .collection('questions')
-      .aggregate([{ $sample: { size: 2 } }])
+      .aggregate([
+        { $match: { status: "approved"} },
+        { $sample: { size: 2 } }
+        ])
       .toArray((err, result) => {
 
         if (err) throw err
@@ -150,7 +217,13 @@ async function getNewQuestion(roomNumber, db) {
   db
       .collection('questions')
       .aggregate([
-        { $match: { _id: { $nin: [currentQuestionId, nextQuestionId] } } },
+        { $match: {
+          $and: [
+            { _id: { $nin: [currentQuestionId, nextQuestionId] } },
+            { status: "approved"}
+            ]
+          }
+        },
         { $sample: { size: 1 } }
       ])
       .toArray((err, result) => {

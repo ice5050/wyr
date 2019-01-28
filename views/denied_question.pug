@@ -1,0 +1,14 @@
+extends base.pug
+
+block body
+	a(href="/")
+		i(class="fa fa-home")
+	.container
+	each question in questions
+		.row
+			.col-md-4.bg-primary.text-white= question.option1
+			.col-md-4.bg-warning= question.option2
+			.col-md-4.d-flex.justify-content-between
+				a(class="btn btn-success" href=`/question/approve/${question._id}`) Approve
+				a(class="btn btn-danger" href=`/question/deny/${question._id}`) Deny
+		hr

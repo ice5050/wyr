@@ -10,24 +10,24 @@ block body
 				h1(class="display-1 text-center").
 					WYR
 				h4(class="lead text-center").
-					Would You Rather
+					คุณจะเลือกอะไรระหว่าง
 			div(class="d-flex justify-content-center", role="tablist")
-					a(href="#nav-new-room", id="new-room", class="btn btn-primary") Create Room
-					span(class="btn cursor-default") or
-					a(href="#nav-join-room", id="join-room", class="btn btn-info") Join Room
+					a(href="#nav-new-room", id="new-room", class="btn btn-primary") ห้องใหม่
+					span(class="btn cursor-default") หรือ
+					a(href="#nav-join-room", id="join-room", class="btn btn-info") ร่วมห้อง
 			.row
 				.col-md-3
 				.col-md-6
 					form(method="post", action="/", id="game-form", style="display: none;", class="mb-0")
 						hr
 						.form-group#player_namee
-							label(for="player_name") Player Name
+							label(for="player_name") ชื่อ
 							input(type="text", name="player_name", class="form-control", id="player_name")
-							span(class="text-danger small d-none", id="name-error") *You need a player name to play
+							span(class="text-danger small d-none", id="name-error") *ใส่ชื่อครับไอ้สัด
 						.form-group#room-number
-							label(for="room_number") Room Code
+							label(for="room_number") รหัสห้อง
 							input(type="text", name="room_number", class="form-control", id="room_number")
-							span(class="text-danger small d-none", id="room-number-error") *You need a room code to join a room
+							span(class="text-danger small d-none", id="room-number-error") *ใส่เลขห้องดิควาย
 						.form-group
 							.text-center
 								input(type="submit", value="Go!", class="btn btn-success")
