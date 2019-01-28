@@ -60,6 +60,7 @@ $(document).ready(() => {
 
   // when the user select an answer (not someone else)
   $('#options button').click(e => {
+    $('#options button').addClass('btn-light')
     $('#options .btn-primary').removeClass('btn-primary')
     e.target.classList.add('btn-primary')
     e.target.classList.remove('btn-light')
@@ -89,6 +90,7 @@ $(document).ready(() => {
     $('#first-option').text(nextQuestion['option1'])
     $('#second-option').text(nextQuestion['option2'])
     $('#options .btn-primary').removeClass('btn-primary')
+    $('#options button').addClass('btn-light')
     resetProgressBar()
     showOptionsAndHideResult(game)
   })
@@ -144,7 +146,7 @@ $(document).ready(() => {
     percent = 1
     bar.attr('aria-valuenow', percent)
     bar.attr('style', `width: ${percent}%;`)
-    bar.text(`00`)
+    bar.text(`0`)
   }
 
   function totalPlayers(game) {
