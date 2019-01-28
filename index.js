@@ -37,16 +37,19 @@ app.get('/', (req, res) => {
 })
 
 app.post('/new_game', (req, res) => {
+  roomNumber = shortid.generate().slice(0,4).toLowerCase()
   if (req.body['player_name'] == 'managequestion') {
     res.redirect('/questions')
     return true
   }
   req.session.playerName = req.body['player_name']
-  res.redirect('/play/' + shortid.generate().slice(0,4).toLowerCase())
+  req.session.roomNumber = roomNumber
+  res.redirect(`/play/${roomNumber}`)
 })
 
 app.post('/join_game', (req, res) => {
   req.session.playerName = req.body['player_name']
+  req.session.roomNumber = req.body['room_number']
   res.redirect('/play/' + req.body['room_number'])
 })
 
