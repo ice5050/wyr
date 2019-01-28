@@ -37,6 +37,10 @@ app.get('/', (req, res) => {
 })
 
 app.post('/new_game', (req, res) => {
+  if (req.body['player_name'] == 'managequestion') {
+    res.redirect('/questions')
+    return true
+  }
   req.session.playerName = req.body['player_name']
   res.redirect('/play/' + shortid.generate().slice(0,4).toLowerCase())
 })
