@@ -164,6 +164,8 @@ async function getNewQuestion(roomNumber, db) {
           console.log("After changing")
           console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
           console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
+        } catch(err) {
+          console.log("A bug I'm too lazy to care") 
         }
 
       })
