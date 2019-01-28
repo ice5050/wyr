@@ -37,6 +37,7 @@ $(document).ready(() => {
     if (hasEveryoneAnswered(data.game)) { 
       disableOptions()
       hideOptionsAndShowResult(2000)
+      resetProgressBar(2000)
     }
 
   })
@@ -89,7 +90,6 @@ $(document).ready(() => {
     $('#second-option').text(nextQuestion['option2'])
     $('#options .btn-primary').removeClass('btn-primary')
     $('#options button').addClass('btn-light')
-    resetProgressBar()
     showOptionsAndHideResult(game)
   })
 
@@ -137,14 +137,17 @@ $(document).ready(() => {
     bar.text(`${playerAnswered}/${playerCount}`)
   }
 
-  function resetProgressBar() {
-    let bar = $('#progress')
-    let percent = 0
+  function resetProgressBar(delay=0) {
+    setTimeout(function() {
+      let bar = $('#progress')
+      let percent = 0
 
-    percent = 1
-    bar.attr('aria-valuenow', percent)
-    bar.attr('style', `width: ${percent}%;`)
-    bar.text(`0`)
+      percent = 1
+      bar.attr('aria-valuenow', percent)
+      bar.attr('style', `width: ${percent}%;`)
+      bar.text(`0`)
+    }, delay)
+    
   }
 
   function totalPlayers(game) {
