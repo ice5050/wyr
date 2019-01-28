@@ -147,10 +147,6 @@ async function getNewQuestion(roomNumber, db) {
   let currentQuestionId = io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion._id
   let nextQuestionId = io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion._id
 
-  console.log("Before changing")
-  console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
-  console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
-
   db
       .collection('questions')
       .aggregate([
@@ -161,9 +157,6 @@ async function getNewQuestion(roomNumber, db) {
         if (err) throw err
         try {
           io.sockets.adapter.rooms[roomNumber]['game'].addNextQuestion(result[0])  
-          console.log("After changing")
-          console.log(io.sockets.adapter.rooms[roomNumber]['game'].currentQuestion)
-          console.log(io.sockets.adapter.rooms[roomNumber]['game'].nextQuestion)
         } catch(err) {
           console.log("A bug I'm too lazy to care") 
         }

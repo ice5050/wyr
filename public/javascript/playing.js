@@ -31,7 +31,6 @@ $(document).ready(() => {
   })
 
   socket.on('playerLeave', data => {
-    console.log(data)
     addAlert('warning', `${data.playerName} has left the game.`)
     updateProgressBar(data.game)
 
@@ -55,7 +54,6 @@ $(document).ready(() => {
   socket.on('nextQuestion', game => {
     game = game
     nextQuestion = game.nextQuestion
-    console.log(nextQuestion)
   })
 
   // when the user select an answer (not someone else)
