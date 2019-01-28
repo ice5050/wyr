@@ -73,7 +73,8 @@ app.get('/questions', (req, res) => {
   questions: wyrDb.collection('questions').find({}).toArray((err, result) => {
     res.render('question', {
       title: "All Questions",
-      questions: result
+      questions: result,
+      path: req.path
     })
   })
 })
@@ -82,7 +83,8 @@ app.get('/questions/pending', (req, res) => {
   questions: wyrDb.collection('questions').find({status: 'pending'}).toArray((err, result) => {
     res.render('question', {
       title: "Pending Questions",
-      questions: result
+      questions: result,
+      path: req.path
     })
   })
 })
@@ -91,7 +93,8 @@ app.get('/questions/denied', (req, res) => {
   questions: wyrDb.collection('questions').find({status: 'denied'}).toArray((err, result) => {
     res.render('question', {
       title: "Denied Questions",
-      questions: result
+      questions: result,
+      path: req.path
     })
   })
 })
@@ -100,7 +103,8 @@ app.get('/questions/approved', (req, res) => {
   questions: wyrDb.collection('questions').find({status: 'approved'}).toArray((err, result) => {
     res.render('question', {
       title: "Approved Questions",
-      questions: result
+      questions: result,
+      path: req.path
     })
   })
 })
@@ -108,19 +112,20 @@ app.get('/questions/approved', (req, res) => {
 app.get('/question/approve/:id', (req, res) => {
   wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "approved"}}, {upsert: false}).then((obj) => {
     console.log(obj)
-    res.redirect('/questions')  
+    res.redirect(req.query['from'])  
   })
 })
 
 app.get('/question/deny/:id', (req, res) => {
   wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "denied"}}, {upsert: false}).then((obj) => {
-    res.redirect('/questions')  
+    res.redirect('/questions')
+    res.redirect(req.query['from'])
   })
 })
 
 app.get('/question/remove/:id', (req, res) => {
   wyrDb.collection('questions').remove({_id: new ObjectID(req.params.id)}, {justOne: true}).then(obj => {
-    res.redirect('/questions')
+    res.redirect(req.query['from'])
   })
 })
 
