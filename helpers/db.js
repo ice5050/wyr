@@ -1,16 +1,16 @@
 const MongoClient = require('mongodb').MongoClient
-const connectionString = 'mongodb://localhost:27017/wyr'
+const mongoConnectionString = process.env.MONGO_CONNECTION || 'mongodb://localhost:27017/wyr'
 
 let _db
 
 async function getDb () {
   if (!_db) {
     let client = await MongoClient.connect(
-      connectionString,
+      mongoConnectionString,
       { useNewUrlParser: true }
     )
     _db = client.db('wyr')
-    console.log(`Connected to Database: ${connectionString}`)
+    console.log(`Connected to Database: ${mongoConnectionString}`)
   }
   return _db
 }
