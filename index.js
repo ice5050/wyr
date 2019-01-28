@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 
 app.post('/new_game', (req, res) => {
   req.session.playerName = req.body['player_name']
-  res.redirect('/play/' + shortid.generate())
+  res.redirect('/play/' + shortid.generate().slice(0,4).toLowerCase())
 })
 
 app.post('/join_game', (req, res) => {
