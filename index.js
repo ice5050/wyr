@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const express = require('express')
 const app = express()
 const http = require('http').Server(app)
@@ -111,7 +113,7 @@ app.get('/questions/approved', (req, res) => {
 
 app.get('/question/approve/:id', (req, res) => {
   wyrDb.collection('questions').updateOne({_id: new ObjectID(req.params.id)}, {$set: {status: "approved"}}, {upsert: false}).then((obj) => {
-    res.redirect(req.query['from'])  
+    res.redirect(req.query['from'])
   })
 })
 
@@ -142,7 +144,7 @@ io.on('connection', socket => {
     socket.playerName = data.playerName
 
     if (io.sockets.adapter.rooms[data.roomNumber]['game'] == undefined) { // 1
-      
+
       wyrDb
       .collection('questions')
       .aggregate([
@@ -238,9 +240,9 @@ async function getNewQuestion(roomNumber, db) {
       .toArray((err, result) => {
         if (err) throw err
         try {
-          io.sockets.adapter.rooms[roomNumber]['game'].addNextQuestion(result[0])  
+          io.sockets.adapter.rooms[roomNumber]['game'].addNextQuestion(result[0])
         } catch(err) {
-          console.log("A bug I'm too lazy to care") 
+          console.log("A bug I'm too lazy to care")
         }
 
       })
