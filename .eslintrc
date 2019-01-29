@@ -11,5 +11,8 @@
   },
   "globals": {
     "io": true
+  },
+  "rules": {
+    "handle-callback-err": 0
   }
 }
