@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/new_game', (req, res) => {
-  roomNumber = shortid.generate().slice(0,4).toLowerCase()
+  let roomNumber = shortid.generate().slice(0,4).toLowerCase()
   if (req.body['player_name'] == 'managequestion') {
     res.redirect('/questions')
     return true
