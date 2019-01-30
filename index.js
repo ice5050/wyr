@@ -94,6 +94,7 @@ function getTitleByStatus (questionStatus) {
 app.get('/questions', async (req, res) => {
   try {
     let status = req.query.status || 'all'
+    let path = (status == 'all') ? req.path : `${req.path}?status=${status}`
     let result = await wyrDb
       .collection('questions')
       .find(status === 'all' ? {} : { status })
@@ -101,7 +102,7 @@ app.get('/questions', async (req, res) => {
     res.render('question', {
       title: getTitleByStatus(status),
       questions: result,
-      path: req.path
+      path: path
     })
   } catch (e) {
     res.status(HTTPStatus.NOT_FOUND)
